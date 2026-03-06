@@ -18,6 +18,14 @@ const server = setupServer(
     );
   }),
   
+  // DELETE /api/items/:id handler
+  rest.delete('/api/items/:id', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({ message: 'Item deleted' })
+    );
+  }),
+
   // POST /api/items handler
   rest.post('/api/items', (req, res, ctx) => {
     const { name } = req.body;
@@ -113,6 +121,30 @@ describe('App Component', () => {
     // Wait for error message
     await waitFor(() => {
       expect(screen.getByText(/Failed to fetch data/)).toBeInTheDocument();
+    });
+  });
+
+  test('deletes an item when delete button is clicked', async () => {
+    const user = userEvent.setup();
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    // Wait for items to load
+    await waitFor(() => {
+      expect(screen.getByText('Test Item 1')).toBeInTheDocument();
+    });
+
+    // Click the first delete button
+    const deleteButtons = screen.getAllByText('Delete');
+    await act(async () => {
+      await user.click(deleteButtons[0]);
+    });
+
+    // The item should be removed from the list
+    await waitFor(() => {
+      expect(screen.queryByText('Test Item 1')).not.toBeInTheDocument();
     });
   });
 
